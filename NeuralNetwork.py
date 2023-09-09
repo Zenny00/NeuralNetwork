@@ -7,6 +7,30 @@ def unpickle(file):
         dict = pickle.load(byte_file, encoding='bytes')
     return dict
 
+
+def load_data():
+    file_path = "./dataset/data_batch_"
+    i = 1
+
+    labels = []
+    data = np.zeros((50000, 3072))
+
+    while (i < 6):
+        data_batch = unpickle(file_path + str(i))
+        labels.extend(data_batch[b"labels"])
+        data_values = data_batch[b"data"]
+        
+        for j in range(len(data_values)):
+            data[j] = data_values[j]
+
+        i = i + 1
+
+    return [data, labels]
+
+data = load_data()
+
+print(len(data[0]), len(data[1]))
+
 data_batch_1 = unpickle("./dataset/data_batch_1")
 
 x_train = data_batch_1[b'data']
