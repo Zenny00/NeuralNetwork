@@ -1,83 +1,81 @@
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+from tensorflow.keras.utils import to_categorical
 
 def unpickle(file):
     with open(file, 'rb') as byte_file:
         dict = pickle.load(byte_file, encoding='bytes')
     return dict
 
-
+# Load all datasets and return the images and labels
 def load_data():
     file_path = "./dataset/data_batch_"
     i = 1
 
     labels = []
-    data = np.zeros((50000, 3072))
-
+    data = np.zeros((50000, 3072), dtype=np.uint8)
+    index = 0
     while (i < 6):
         data_batch = unpickle(file_path + str(i))
         labels.extend(data_batch[b"labels"])
         data_values = data_batch[b"data"]
         
         for j in range(len(data_values)):
-            data[j] = data_values[j]
+            data[index] = data_values[j]
+            index = index + 1
 
         i = i + 1
-
+    
     return [data, labels]
 
+# Neural network core class
+class NeuralNetwork:
+    def __init__(self, input_neurons, hidden_neurons, output_neurons, learning_rate, num_epochs):
+        self.input_neurons = input_neurons
+        self.hidden_neurons = hidden_neurons
+        self.output_neurons = output_neurons
+        self.num_epochs = num_epochs
+
+        # Here we simply initialize the weights and bias to random values
+        # They will be updated through the training process
+
+        # Link the weights from input layer to hidden layer
+        self.wih = np.random.normal(0.0, pow(self.input_neurons, -0.5), (self.hidden_neurons, self.input_neurons))
+        self.bih = 0
+
+        # Link weights from hidden layer to output layer
+        self.who = np.random.normal(0.0, pow(self.hidden_neurons, -0.5), (self.output_neurons, self.hidden_neurons))
+        self.bho = 0
+
+        self.lr = learning_rate
+
 data = load_data()
+images = data[0]
+labels = data[1]
 
-print(len(data[0]), len(data[1]))
+# Reshape and transpose the images
+images = images.reshape(len(images), 3, 32, 32)
+images = images.transpose(0, 2, 3, 1)
 
-data_batch_1 = unpickle("./dataset/data_batch_1")
+# Strings are stored as byte strings. Here a list comprehension is used to decode each string
+label_names = [x.decode() for x in unpickle("./dataset/batches.meta")[b'label_names']]
 
-x_train = data_batch_1[b'data']
-print(x_train.shape)
-
-meta_file = unpickle("./dataset/batches.meta")
-print(meta_file[b'label_names'])
-
-image = data_batch_1[b'data'][0]
-image = image.reshape(3, 32, 32)
-image = image.transpose(1, 2, 0)
-
-label = data_batch_1[b'labels'][0]
-print(image.shape)
-
-x_train = x_train.reshape(len(x_train), 3, 32, 32)
-x_train = x_train.transpose(0, 2, 3, 1)
-
-label_name = meta_file[b'label_names']
-
-# take the images data from batch data
-images = data_batch_1[b'data']
-# reshape and transpose the images
-images = images.reshape(len(images),3,32,32).transpose(0,2,3,1)
-# take labels of the images 
-labels = data_batch_1[b'labels']
-# label names of the images
-label_names = meta_file[b'label_names']
-
-# dispaly random images
-# define row and column of figure
-rows, columns = 5, 5
-# take random image idex id
-imageId = np.random.randint(0, len(images), rows * columns)
-# take images for above random image ids
-images = images[imageId]
-# take labels for these images only
-labels = [labels[i] for i in imageId]
-
-# define figure
-fig=plt.figure(figsize=(10, 10))
-# visualize these random images
-for i in range(1, columns*rows +1):
-    fig.add_subplot(rows, columns, i)
-    plt.imshow(images[i-1])
-    plt.xticks([])
-    plt.yticks([])
-    plt.title("{}"
-          .format(label_names[labels[i-1]]))
+plt.imshow(images[12523])
+plt.title(label_names[labels[12523]])
 plt.show()
+
+# Get training and testing subsets of the dataset (45,000 training examples, 5,000 testing examples)
+train_x = images[:45000]
+train_y = labels[:45000]
+
+test_x = images[45000:]
+test_y = labels[45000:]
+
+# Flatten and normalize the data
+train_x = train_x.reshape(train_x.shape[0], -1) / 255.0
+test_x = test_x.reshape(test_x.shape[0], -1) / 255.0
+
+# Convert into a one-hot vector (if the label value is 3, its one-hot vector will be [0,0,0,1,0,0,0,0,0,0]
+train_y = to_categorical(train_y)
+test_y = to_categorical(test_y)
