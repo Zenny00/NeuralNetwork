@@ -3,6 +3,36 @@ import pickle
 import matplotlib.pyplot as plt
 from tensorflow.keras.utils import to_categorical
 
+# Neural network core class
+class NeuralNetwork:
+    def __init__(self, input_neurons, hidden_neurons, output_neurons, learning_rate, num_epochs):
+        self.input_neurons = input_neurons
+        self.hidden_neurons = hidden_neurons
+        self.output_neurons = output_neurons
+        self.num_epochs = num_epochs
+
+        # Here we simply initialize the weights and bias to random values
+        # They will be updated through the training process
+
+        # Link the weights from input layer to hidden layer
+        self.wih = np.random.normal(0.0, pow(self.input_neurons, -0.5), (self.hidden_neurons, self.input_neurons))
+        self.bih = 0
+
+        # Link weights from hidden layer to output layer
+        self.who = np.random.normal(0.0, pow(self.hidden_neurons, -0.5), (self.output_neurons, self.hidden_neurons))
+        self.bho = 0
+
+        self.lr = learning_rate
+
+    def sigmoid_activation(self, z):
+        # The return will be the sigmoid function given the value of z
+        z = np.clip(z, -500, 500)
+        return 1 / (1 + np.exp(-z))
+
+    def sigmoid_activation_derivative(self, z):
+        # The return will be the derivative of the sigmoid value of z
+        return self.sigmoid_activation(z) * (1 - self.sigmoid_activation(z))
+
 def unpickle(file):
     with open(file, 'rb') as byte_file:
         dict = pickle.load(byte_file, encoding='bytes')
@@ -28,27 +58,6 @@ def load_data():
         i = i + 1
     
     return [data, labels]
-
-# Neural network core class
-class NeuralNetwork:
-    def __init__(self, input_neurons, hidden_neurons, output_neurons, learning_rate, num_epochs):
-        self.input_neurons = input_neurons
-        self.hidden_neurons = hidden_neurons
-        self.output_neurons = output_neurons
-        self.num_epochs = num_epochs
-
-        # Here we simply initialize the weights and bias to random values
-        # They will be updated through the training process
-
-        # Link the weights from input layer to hidden layer
-        self.wih = np.random.normal(0.0, pow(self.input_neurons, -0.5), (self.hidden_neurons, self.input_neurons))
-        self.bih = 0
-
-        # Link weights from hidden layer to output layer
-        self.who = np.random.normal(0.0, pow(self.hidden_neurons, -0.5), (self.output_neurons, self.hidden_neurons))
-        self.bho = 0
-
-        self.lr = learning_rate
 
 data = load_data()
 images = data[0]
