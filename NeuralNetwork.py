@@ -132,12 +132,12 @@ images = images.transpose(0, 2, 3, 1)
 # Strings are stored as byte strings. Here a list comprehension is used to decode each string
 label_names = [x.decode() for x in unpickle("./dataset/batches.meta")[b'label_names']]
 
-# Get training and testing subsets of the dataset (45,000 training examples, 5,000 testing examples)
-train_x = images[:45000]
-train_y = labels[:45000]
+# Get training and testing subsets of the dataset (48,000 training examples, 48,000 testing examples)
+train_x = images[:48000]
+train_y = labels[:48000]
 
-test_x = images[45000:]
-test_y = labels[45000:]
+test_x = images[48000:]
+test_y = labels[48000:]
 
 # Flatten and normalize the data
 train_x = train_x.reshape(train_x.shape[0], -1) / 255.0
@@ -147,7 +147,7 @@ test_x = test_x.reshape(test_x.shape[0], -1) / 255.0
 train_y = to_categorical(train_y)
 test_y = to_categorical(test_y)
 
-neural_network = NeuralNetwork(input_neurons=3072, hidden_neurons=128, output_neurons=10, learning_rate=0.01, num_epochs=1000)
+neural_network = NeuralNetwork(input_neurons=3072, hidden_neurons=256, output_neurons=10, learning_rate=0.01, num_epochs=1000)
 neural_network.fit(inputs_list=train_x, targets_list=train_y)
 
 # Predicting probabilities
@@ -162,12 +162,12 @@ for probability in probabilities:
     prediction[max_index] = 1
     predictions.append(prediction)
 
-print("Accuracy:",accuracy_score(predictions, y_test))
-print("CR:", classification_report(predictions, y_test))
+print("Accuracy:",accuracy_score(predictions, test_y))
+print("CR:", classification_report(predictions, test_y))
 
 fig, axes = plt.subplots(2, 4, figsize=(10,6))
 for i, ax in enumerate(axes.flat):
-    img_data = test_x[i].reshape((32, 32))
+    img_data = test_x[i].reshape((32, 32, 3))
     ax.imshow(img_data)
     ax.set_xticks([])
     ax.set_yticks([])
@@ -177,5 +177,5 @@ for i, ax in enumerate(axes.flat):
     if label != true_label: # Incorrect prediction
         ax.set_xlabel(label, color='r')
     else:
-        ax.set_xlabel(label)
+        ax.set_xlabel(label, color='g')
 plt.show()
