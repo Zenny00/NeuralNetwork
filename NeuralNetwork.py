@@ -2,6 +2,8 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from tensorflow.keras.utils import to_categorical
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
 
 # Neural network core class
 class NeuralNetwork:
@@ -52,8 +54,8 @@ class NeuralNetwork:
         return yj
 
     # Backpropagation function
-    def backpropagation(self, input_list, target_list):
-        inputs = np.array(input_list, ndmin=2).T # Transpose the matrix
+    def backpropagation(self, inputs_list, targets_list):
+        inputs = np.array(inputs_list, ndmin=2).T # Transpose the matrix
         tj = np.array(targets_list, ndmin=2).T
 
         # Pass the input values into the hidden layer
@@ -82,6 +84,16 @@ class NeuralNetwork:
         self.bho -= self.lr * (output_errors * self.sigmoid_activation_derivative(yj))
         self.bih -= self.lr * (hidden_errors * self.sigmoid_activation_derivative(hidden_outputs))
         pass
+
+    # Performing gradient descent optimization using backpropagation
+    def fit(self, inputs_list, targets_list):
+        for epoch in range(self.num_epochs):
+            self.backpropagation(inputs_list, targets_list)
+            print(f"Epoch {epoch}/{self.num_epochs} completed.")
+
+    def predict(self, X):
+        outputs = self.forward_propagation(X).T
+        return outputs
 
 def unpickle(file):
     with open(file, 'rb') as byte_file:
@@ -120,10 +132,6 @@ images = images.transpose(0, 2, 3, 1)
 # Strings are stored as byte strings. Here a list comprehension is used to decode each string
 label_names = [x.decode() for x in unpickle("./dataset/batches.meta")[b'label_names']]
 
-plt.imshow(images[12523])
-plt.title(label_names[labels[12523]])
-plt.show()
-
 # Get training and testing subsets of the dataset (45,000 training examples, 5,000 testing examples)
 train_x = images[:45000]
 train_y = labels[:45000]
@@ -138,3 +146,36 @@ test_x = test_x.reshape(test_x.shape[0], -1) / 255.0
 # Convert into a one-hot vector (if the label value is 3, its one-hot vector will be [0,0,0,1,0,0,0,0,0,0]
 train_y = to_categorical(train_y)
 test_y = to_categorical(test_y)
+
+neural_network = NeuralNetwork(input_neurons=3072, hidden_neurons=128, output_neurons=10, learning_rate=0.01, num_epochs=1000)
+neural_network.fit(inputs_list=train_x, targets_list=train_y)
+
+# Predicting probabilities
+probabilities = neural_network.predict(test_x)
+
+# Convert into one-hot vector format
+predictions = []
+
+for probability in probabilities:
+    max_index = np.argmax(probability)
+    prediction = np.zeros_like(probability)
+    prediction[max_index] = 1
+    predictions.append(prediction)
+
+print("Accuracy:",accuracy_score(predictions, y_test))
+print("CR:", classification_report(predictions, y_test))
+
+fig, axes = plt.subplots(2, 4,, figsize=(10,6))
+for i, ax in enumerate(axes.flat):
+    img_data = test_x[i].reshape((32, 32))
+    ax.imshow(img_data)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    index = np.where(predictions[i] == 1)[0][0]
+    label = label_names[index]
+    true_label = label_names[np.argmax(test_y[i])]
+    if label != true_label: # Incorrect prediction
+        ax.set_xlabel(label, color='r')
+    else:
+        ax.set_xlabel(label)
+plt.show()
