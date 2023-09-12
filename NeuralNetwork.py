@@ -32,6 +32,56 @@ class NeuralNetwork:
     def sigmoid_activation_derivative(self, z):
         # The return will be the derivative of the sigmoid value of z
         return self.sigmoid_activation(z) * (1 - self.sigmoid_activation(z))
+    
+    # Forward propagation function
+    def forward_propagation(self, input_list):
+        inputs = np.array(input_list, ndmin=2).T # Transpose the matrix
+
+        # Pass the input values into the hidden layer
+        hidden_inputs = np.dot(self.wih, inputs) + self.bih
+
+        # Get the output of the hidden layer 
+        hidden_outputs = self.sigmoid_activation(hidden_inputs)
+
+        # Pass the output from the hidden layer into the output layer
+        final_inputs = np.dot(self.who, hidden_outputs) + self.bho
+
+        # Get the output of the output layer
+        yj = self.sigmoid_activation(final_inputs)
+
+        return yj
+
+    # Backpropagation function
+    def backpropagation(self, input_list, target_list):
+        inputs = np.array(input_list, ndmin=2).T # Transpose the matrix
+        tj = np.array(targets_list, ndmin=2).T
+
+        # Pass the input values into the hidden layer
+        hidden_inputs = np.dot(self.wih, inputs) + self.bih
+
+        # Get the output from the hidden layer
+        hidden_outputs = self.sigmoid_activation(hidden_inputs)
+
+        # Pass the outputs from the hidden layer into the output layer
+        final_inputs = np.dot(self.who, hidden_outputs) + self.bho
+
+        # Get output of the output layer
+        yj = self.sigmoid_activation(final_inputs)
+
+        # Get the error from the output layer
+        output_errors = - (tj - yj) # The inverse difference between the expected and real outputs
+
+        # Find error in the hidden layer
+        hidden_errors = np.dot(self.who.T, output_errors)
+
+        # Update all of the weights using Gradient Descent
+        self.who -= self.lr * np.dot((output_errors * self.sigmoid_activation_derivative(yj)), np.transpose(hidden_outputs))
+        self.wih -= self.lr * np.dot((hidden_errors * self.sigmoid_activation_derivative(hidden_outputs)), np.transpose(inputs))
+
+        # Update bias values
+        self.bho -= self.lr * (output_errors * self.sigmoid_activation_derivative(yj))
+        self.bih -= self.lr * (hidden_errors * self.sigmoid_activation_derivative(hidden_outputs))
+        pass
 
 def unpickle(file):
     with open(file, 'rb') as byte_file:
