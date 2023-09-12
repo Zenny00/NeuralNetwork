@@ -165,7 +165,7 @@ for probability in probabilities:
 print("Accuracy:",accuracy_score(predictions, y_test))
 print("CR:", classification_report(predictions, y_test))
 
-fig, axes = plt.subplots(2, 4,, figsize=(10,6))
+fig, axes = plt.subplots(2, 4, figsize=(10,6))
 for i, ax in enumerate(axes.flat):
     img_data = test_x[i].reshape((32, 32))
     ax.imshow(img_data)
