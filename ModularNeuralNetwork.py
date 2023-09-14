@@ -3,6 +3,19 @@ from DataLoad import unpickle, load_data
 from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 
+class Layer:
+    def __init__(self) -> None:
+        self.input = None
+        self.output = None
+        
+        # Given an input X (usually a matrix) this function will compute the output Y (also a matrix)
+        def forward_propagation(self, input):
+            raise NotImplementedError
+        
+        # Compute the derivative of E with respect to X (dE/dX) for a given dE/dY. Update and parameters if needed
+        def back_propagation(self, output_error, learning_rate):
+            raise NotImplementedError
+
 data = load_data()
 images = data[0]
 labels = data[1]
