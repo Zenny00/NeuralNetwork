@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.utils import to_categorical
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.utils import shuffle
+
+np.random.seed(1337)
 
 # Neural network core class
 class NeuralNetwork:
@@ -37,7 +40,7 @@ class NeuralNetwork:
     
     # Forward propagation function
     def forward_propagation(self, input_list):
-        inputs = np.array(input_list, ndmin=2).T # Transpose the matrix
+        inputs = np.array(input_list, ndmin=2).T # Transpose the matrix       
 
         # Pass the input values into the hidden layer
         hidden_inputs = np.dot(self.wih, inputs) + self.bih
@@ -106,9 +109,9 @@ def load_data():
     i = 1
 
     labels = []
-    data = np.zeros((50000, 3072), dtype=np.uint8)
+    data = np.zeros((10000, 3072), dtype=np.uint8)
     index = 0
-    while (i < 6):
+    while (i < 2):
         data_batch = unpickle(file_path + str(i))
         labels.extend(data_batch[b"labels"])
         data_values = data_batch[b"data"]
@@ -132,12 +135,17 @@ images = images.transpose(0, 2, 3, 1)
 # Strings are stored as byte strings. Here a list comprehension is used to decode each string
 label_names = [x.decode() for x in unpickle("./dataset/batches.meta")[b'label_names']]
 
-# Get training and testing subsets of the dataset (48,000 training examples, 48,000 testing examples)
-train_x = images[:48000]
-train_y = labels[:48000]
+# Shuffle the dataset
+# images, labels = shuffle(images, labels, random_state=True)
 
-test_x = images[48000:]
-test_y = labels[48000:]
+# Get training and testing subsets of the dataset (48,000 training examples, 48,000 testing examples)
+train_x = images[:5000]
+train_y = labels[:5000]
+
+test_x = images[5000:]
+test_y = labels[5000:]
+
+print(list(set(train_y)))
 
 # Flatten and normalize the data
 train_x = train_x.reshape(train_x.shape[0], -1) / 255.0
@@ -147,10 +155,11 @@ test_x = test_x.reshape(test_x.shape[0], -1) / 255.0
 train_y = to_categorical(train_y)
 test_y = to_categorical(test_y)
 
-neural_network = NeuralNetwork(input_neurons=3072, hidden_neurons=256, output_neurons=10, learning_rate=0.01, num_epochs=1000)
+neural_network = NeuralNetwork(input_neurons=3072, hidden_neurons=128, output_neurons=10, learning_rate=0.01, num_epochs=100)
 neural_network.fit(inputs_list=train_x, targets_list=train_y)
 
 # Predicting probabilities
+print(test_x.shape)
 probabilities = neural_network.predict(test_x)
 
 # Convert into one-hot vector format
