@@ -1,5 +1,7 @@
 import numpy as np
 from DataLoad import unpickle, load_data
+from tensorflow.keras.utils import to_categorical
+import matplotlib.pyplot as plt
 
 data = load_data()
 images = data[0]
@@ -22,7 +24,15 @@ train_y = labels[:5000]
 test_x = images[5000:]
 test_y = labels[5000:]
 
-print(list(set(train_y)))
+fig, axes = plt.subplots(2, 4, figsize=(10,6))
+for i, ax in enumerate(axes.flat):
+    img_data = train_x[i].reshape((32, 32, 3))
+    ax.imshow(img_data)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    label = label_names[train_y[i]]
+    ax.set_xlabel(label)
+plt.show()
 
 # Flatten and normalize the data
 train_x = train_x.reshape(train_x.shape[0], -1) / 255.0
