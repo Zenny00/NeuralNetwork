@@ -28,4 +28,15 @@ This function needs to be evaluatable for every network parameter.
 
 Move backwards in the network updating the previous layers by calculating their new values using the chain rule.
 
-![BackPropagation](images/BackPropagation.png)
+![Back Propagation](images/BackPropagation.png)
+
+## Fully Connected Layer
+
+In a fully connected layer, every input neuron is connected to every output neuron
+
+![Fully Connected](images/FullyConnectLayer.png)
+
+We can calculate the values of the output neurons using the following formula.
+
+![Forward Propagation](images/ForwardPropagation.png)
+
