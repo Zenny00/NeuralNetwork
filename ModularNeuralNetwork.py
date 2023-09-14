@@ -4,7 +4,7 @@ from tensorflow.keras.utils import to_categorical
 import matplotlib.pyplot as plt
 
 class Layer:
-    def __init__(self) -> None:
+    def __init__(self):
         self.input = None
         self.output = None
         
@@ -16,6 +16,28 @@ class Layer:
         def back_propagation(self, output_error, learning_rate):
             raise NotImplementedError
 
+class FCLayer(Layer):
+    # input_size is the number of input neurons
+    # output_size is the number of output neurons
+    def __init__(self, input_size, output_size):
+        self.weights = np.random.rand(input_size, output_size) - 0.5
+        self.bias = np.random.rand(1, output_size) - 0.5
+        
+    # Return the output of a given input
+    def forward_propagation(self, input_data):
+        self.input = input_data
+        self.output = np.dot(self.input, self.weights) + self.bias
+        return self.output
+    
+    # Computes dE/dW, dE/dB for a given output error (dE/dY). This returns the input error (dE/dX)
+    def back_propagation(self, output_error, learning_rate):
+        input_error = np.dot(output_error, self.weights.T)
+        weights_error = np.dot(self.input.T, output_error)
+        
+        self.weights -= learning_rate * weights_error
+        self.bias -= learning_rate * output_error
+        return input_error
+    
 data = load_data()
 images = data[0]
 labels = data[1]
